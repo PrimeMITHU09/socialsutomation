@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Social Automation</title>
+  <meta name="theme-color" content="#0b0b1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Social Auto">
+  <meta name="description" content="AI-powered social media automation engine.">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Custom Drag Titlebar for Electron -->
+  <div class="titlebar">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">
+      <span class="mobile-menu-icon">›</span>
+    </button>
+    <div class="titlebar-title">
+      <div class="titlebar-dot"></div>
+      <span class="titlebar-brand">Social Automation</span>
+    </div>
+  </div>
+
+  <!-- API Key Warning Banner -->
+  <div class="api-warning-banner hidden" id="apiWarningBanner">
+    <div class="api-warning-content">
+      <div class="api-warning-icon">⚠️</div>
+      <div class="api-warning-text">
+        <strong id="apiWarningTitle">Some API keys are not configured</strong>
+        <span id="apiWarningDetail">Configure your keys in Settings to enable all features.</span>
+      </div>
+      <button class="api-warning-action" id="apiWarningFixBtn" onclick="document.getElementById('navSettings').click()">Open Settings</button>
+      <button class="api-warning-close" id="apiWarningCloseBtn">✕</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       AUTH SCREEN (Login / Register)
+       ═══════════════════════════════════════════ -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-screen-shell">
+      <!-- Left: Visual branding -->
+      <div class="auth-screen-visual">
+        <div class="auth-brand-logo">
+          <svg width="52" height="52" viewBox="0 0 100 100" fill="none">
+            <defs><linearGradient id="authLogoGrad" x1="0" y1="0" x2="100" y2="100"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient></defs>
+            <polygon points="50 5 90 27.5 90 72.5 50 95 10 72.5 10 27.5" fill="url(#authLogoGrad)" opacity="0.15" stroke="url(#authLogoGrad)" stroke-width="2"/>
+            <polygon points="40 32 40 68 68 50" fill="url(#authLogoGrad)"/>
+          </svg>
+          <h1 class="auth-brand-title">Social <span class="brand-accent">Automation</span></h1>
+          <p class="auth-brand-sub">AI-Powered Social Media Engine</p>
+        </div>
+        <div class="auth-features-list">
+          <div class="auth-feature-item">🚀 Automation Engine — build workflows visually</div>
+          <div class="auth-feature-item">🤖 AI Content Pipeline — generate posts, scripts, hashtags</div>
+          <div class="auth-feature-item">📱 Social Autopilot — Facebook & YouTube auto-publish</div>
+          <div class="auth-feature-item">🎬 Video Storyboard — AI-powered video creation</div>
+        </div>
+      </div>
+      <!-- Right: Auth form -->
+      <div class="auth-modal">
+        <button class="auth-close-btn" id="authCloseBtn">✕</button>
+        <div class="auth-panel-badge">⚡ Prime AI</div>
+        <h2 id="authTitle" class="auth-title">Welcome Back</h2>
+        <p id="authSubtitle" class="auth-subtitle">Sign in to your Prime AI account</p>
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabLogin">Sign In</button>
+          <button class="auth-tab" id="tabRegister">Create Account</button>
+        </div>
+        <div id="authMessage" class="auth-message hidden"></div>
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form">
+          <div class="auth-field">
+            <label for="loginEmail">Email Address</label>
+            <input type="email" id="loginEmail" placeholder="you@example.com" required>
+          </div>
+          <div class="auth-field">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" required>
+          </div>
+          <div class="auth-row">
+            <label class="auth-checkbox"><input type="checkbox" id="rememberMeCheckbox" checked> Remember me</label>
+            <a href="#" id="forgotLink" class="auth-link">Forgot password?</a>
+          </div>
+          <button type="submit" class="auth-btn auth-btn-primary">Sign In →</button>
+          <p class="auth-footer" id="authFooterNote">Don't have an account? <strong>Switch to Create Account</strong></p>
+        </form>
+        <!-- Register Form -->
+        <form id="registerForm" class="auth-form hidden">
+          <div class="auth-field">
+            <label for="regName">Full Name</label>
+            <input type="text" id="regName" placeholder="Your full name" required>
+          </div>
+          <div class="auth-field">
+            <label for="regEmail">Email Address</label>
+            <input type="email" id="regEmail" placeholder="you@example.com" required>
+          </div>
+          <div class="auth-field">
+            <label for="regPassword">Password</label>
+            <input type="password" id="regPassword" placeholder="Min 6 characters" required>
+          </div>
+          <div class="auth-field">
+            <label for="regConfirm">Confirm Password</label>
+            <input type="password" id="regConfirm" placeholder="Repeat password" required>
+          </div>
+          <button type="submit" class="auth-btn auth-btn-primary">Create Account →</button>
+          <p class="auth-footer">Already have an account? <strong>Switch to Sign In</strong></p>
+        </form>
+        <div class="auth-lang-row">
+          <select id="authLanguageSelect" class="auth-lang-select">
+            <option value="en">English</option>
+            <option value="bn">বাংলা</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand" onclick="location.href='/' + (location.search || '')" style="cursor:pointer" title="Refresh & go to Dashboard">
+        <div class="brand-logo">
+          <svg width="28" height="28" viewBox="0 0 100 100" fill="none">
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="100" y2="100">
+                <stop offset="0%" stop-color="#8b5cf6"/>
+                <stop offset="100%" stop-color="#06b6d4"/>
+              </linearGradient>
+            </defs>
+            <polygon points="50 5 90 27.5 90 72.5 50 95 10 72.5 10 27.5" fill="url(#logoGrad)" opacity="0.15" stroke="url(#logoGrad)" stroke-width="2"/>
+            <polygon points="40 32 40 68 68 50" fill="url(#logoGrad)"/>
+            <circle cx="50" cy="50" r="28" fill="none" stroke="url(#logoGrad)" stroke-width="1" opacity="0.3"/>
+            <circle cx="50" cy="50" r="36" fill="none" stroke="url(#logoGrad)" stroke-width="0.5" opacity="0.15"/>
+          </svg>
+        </div>
+        <div class="brand-name">
+          <h2 class="brand-title">Social <span class="brand-accent">Automation</span></h2>
+          <span class="brand-sub">AI Engine v2.0</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-target="overview-view" id="navOverview">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="9"></rect>
+            <rect x="14" y="3" width="7" height="5"></rect>
+            <rect x="14" y="12" width="7" height="9"></rect>
+            <rect x="3" y="16" width="7" height="5"></rect>
+          </svg>
+          <span class="nav-label">Overview Dashboard</span>
+        </button>
+
+        <div class="nav-section-title">AI Workspaces</div>
+
+        <button class="nav-item" data-target="automation-view" id="navAutomation">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <span class="nav-label">Automation Engine</span>
+        </button>
+
+        <button class="nav-item" data-target="generative-view" id="navGenerative">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
+          <span class="nav-label">Video Storyboard</span>
+        </button>
+
+        <button class="nav-item" data-target="videotools-view" id="navVideoTools">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+          </svg>
+          <span class="nav-label">Video Tools</span>
+        </button>
+
+        <button class="nav-item" data-target="autopilot-view" id="navAutopilot">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 12a11 11 0 1 1-22 0 11 11 0 0 1 22 0z"></path>
+            <path d="M12 7v5l3 3"></path>
+          </svg>
+          <span class="nav-label">Social Autopilot</span>
+        </button>
+
+        <div class="nav-section-title">Utilities & Assets</div>
+
+        <button class="nav-item" data-target="fundamentals-view" id="navFundamentals">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg>
+          <span class="nav-label">AI Fundamentals & Hub</span>
+        </button>
+
+
+
+        <button class="nav-item" data-target="aitools-view" id="navAiTools">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v6l4 2"></path>
+            <path d="M9 10a3 3 0 1 1 3-3v1"></path>
+          </svg>
+          <span class="nav-label">AI Tools</span>
+        </button>
+
+        <div class="nav-section-title">Configuration</div>
+
+        <button class="nav-item" data-target="settings-view" id="navSettings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"></path>
+            <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+          </svg>
+          <span class="nav-label">API Integrations</span>
+          <span class="nav-badge" id="settingsBadge" style="display:none"></span>
+        </button>
+
+<button class="nav-item" data-target="about-view" id="navAbout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span class="nav-label">About</span>
+        </button>
+
+        <button class="nav-item" data-target="admin-view" id="navAdmin">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <span class="nav-label">Admin Panel</span>
+        </button>
+
+        <button class="nav-item" data-target="pricing-view" id="navPricing">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span class="nav-label">Plans & Pricing</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <!-- User Profile Card -->
+        <div class="sidebar-user-card" id="sidebarUserCard">
+          <!-- Shown when logged in -->
+          <div class="user-card-logged" id="userCardLogged" style="display:none">
+            <div class="user-avatar-mini" id="userAvatarMini">--</div>
+            <div class="user-card-info">
+              <span class="user-card-name" id="userCardName">Signed in user</span>
+              <span class="user-card-email" id="userCardEmail">email@example.com</span>
+            </div>
+            <button class="user-card-profile-btn" id="openProfileBtn" title="View Profile">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"></path></svg>
+            </button>
+          </div>
+          <!-- Shown when logged out -->
+          <div class="user-card-guest" id="userCardGuest">
+            <div class="guest-avatar">👤</div>
+            <div class="user-card-info">
+              <span class="user-card-name">Sign in required</span>
+              <span class="user-card-email">No active user session</span>
+            </div>
+            <button class="btn-signin-mini" id="openAuthBtn">Sign In</button>
+          </div>
+        </div>
+
+        <div class="download-path-indicator" id="downloadPathIndicator" title="Click to open downloads directory">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span id="downloadPathText">Loading path...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Viewport Area -->
+    <div class="workspace-area">
+      
+      <!-- 1. OVERVIEW VIEW -->
+      <section class="viewport-section active" id="overview-view">
+        <div class="section-header">
+          <h1 id="overviewWelcomeTitle">Welcome</h1>
+          <p id="overviewWelcomeSubtitle">Sign in to manage your automations and connected services.</p>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>TOTAL POSTS</span>
+              <div class="stat-icon icon-green">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statPostsPosted">0</div>
+            <div class="stat-footer">Successfully published to socials</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>QUEUE PENDING</span>
+              <div class="stat-icon icon-orange">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statQueuePending">0</div>
+            <div class="stat-footer">Items waiting in autopilot queue</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>MEDIA GENERATED</span>
+              <div class="stat-icon icon-purple">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statMediaGenerated">0</div>
+            <div class="stat-footer">Images & video assets compiled</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>WORKFLOWS</span>
+              <div class="stat-icon icon-cyan">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statWorkflows">0 / 0</div>
+            <div class="stat-footer">Active / Total workflow automations</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>RUNS COMPLETED</span>
+              <div class="stat-icon icon-green">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statRunsCompleted">0</div>
+            <div class="stat-footer">Total successful executions</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>FAILED RUNS</span>
+              <div class="stat-icon icon-red">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+              </div>
+            </div>
+            <div class="stat-value" id="statRunsFailed">0</div>
+            <div class="stat-footer">Errors that need attention</div>
+          </div>
+        </div>
+
+        <div class="overview-grid">
+          <!-- Quick Access Cards -->
+          <div class="dashboard-panel">
+            <h3 class="panel-title">System Overview & Modules</h3>
+            <div class="quick-link-list">
+              <div class="quick-link-item" onclick="document.getElementById('navAutomation').click()">
+                <div class="item-visual visual-cyan">1</div>
+                <div class="item-info">
+                  <h4>Facebook & YouTube Automation</h4>
+                  <p>Execute real workflow automations with platform integrations and API alerts.</p>
+                </div>
+                <span class="badge badge-cyan">System 1</span>
+              </div>
+              
+              <div class="quick-link-item" onclick="document.getElementById('navGenerative').click()">
+                <div class="item-visual visual-purple">2</div>
+                <div class="item-info">
+                  <h4>Video Storyboard Studio</h4>
+                  <p>AI-powered video storyboard generation for faceless and face content.</p>
+                </div>
+                <span class="badge badge-purple">System 2</span>
+              </div>
+
+              <div class="quick-link-item" onclick="document.getElementById('navAutopilot').click()">
+                <div class="item-visual visual-orange">3</div>
+                <div class="item-info">
+                  <h4>Social Autopilot</h4>
+                  <p>Schedule posts, generate content, and auto-publish with humanizer.</p>
+                </div>
+                <span class="badge badge-orange">System 3</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="dashboard-panel">
+            <h3 class="panel-title">Recent Activity</h3>
+            <div class="recent-activity" id="recentActivity">
+              <div class="recent-empty">Loading activity...</div>
+            </div>
+          </div>
+
+          <!-- Quick System Console -->
+          <div class="dashboard-panel">
+            <h3 class="panel-title">Active Platform Log</h3>
+            <div class="system-logs-preview" id="overviewLogs">
+              <div class="log-row info">[09:12:04] AI Agent Workspace loaded successfully.</div>
+              <div class="log-row info">[09:12:05] Facebook integration listener ready.</div>
+              <div class="log-row info">[09:12:05] YouTube integration listener ready.</div>
+              <div class="log-row warning">[09:15:33] Prompt Engineering Templates loaded (Gemini, Claude, GPT).</div>
+              <div class="log-row info">[15:00:57] User registered under identity profile 'Adi'.</div>
+              <div class="log-row info">[15:05:33] AI partner initialized under workspace moniker 'Mithu'.</div>
+            </div>
+          </div>
+        </div>
+
+
+
+      </section>
+
+      <!-- 2. ABOUT VIEW -->
+      <section class="viewport-section" id="about-view">
+        <div class="about-hero" style="padding:48px 0 40px">
+          <div class="about-hero-glow" style="top:-80px"></div>
+          <div class="about-hero-content">
+            <div class="about-badge">v2.0 · Enterprise Grade</div>
+            <h1 class="about-title">Social <span class="brand-accent">Automation</span></h1>
+            <p class="about-subtitle">AI-Powered Social Media Engine</p>
+            <p class="about-desc">The next-generation autonomous platform that creates, optimizes, and publishes viral content across Facebook & YouTube — powered by real AI with no-code workflow automation.</p>
+            <div class="about-stats">
+              <div class="about-stat"><span class="about-stat-num">4</span><span class="about-stat-label">AI Engines</span></div>
+              <div class="about-stat"><span class="about-stat-num">3</span><span class="about-stat-label">Workflows</span></div>
+              <div class="about-stat"><span class="about-stat-num">2</span><span class="about-stat-label">Platforms</span></div>
+              <div class="about-stat"><span class="about-stat-num">∞</span><span class="about-stat-label">Automation</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="about-mission">
+          <div class="about-mission-card">
+            <h2>Our Mission</h2>
+            <p>We built Social Automation to reduce repetitive social publishing work. Instead of manually writing captions, preparing uploads, scheduling posts, and checking failures one by one, this dashboard brings those tasks into one workflow-driven interface.</p>
+            <p>Where real integrations are configured, the system can generate content with Gemini, stage media, queue posts, and publish to connected platforms. Features without live integrations should be treated as local UI tools, not guaranteed automation.</p>
+          </div>
+          <div class="about-mission-card">
+            <h2>Why This Exists</h2>
+            <p>Content creators, agencies, and businesses spend a lot of time on repetitive posting tasks. This project brings workflow automation, publishing controls, and API integrations into one place without requiring a heavy framework.</p>
+            <p>The Facebook Page and YouTube publishing paths use real API flows. Other areas of the product may still depend on local UI logic or starter/demo-style content and should be reviewed feature by feature.</p>
+          </div>
+        </div>
+
+        <div class="about-how">
+          <h2 class="about-section-title">How It Works</h2>
+          <div class="about-steps">
+            <div class="about-step">
+              <div class="about-step-num">01</div>
+              <div class="about-step-content">
+                <h4>Connect Your Platforms</h4>
+                <p>Link your Facebook Page and YouTube Channel via OAuth. Credentials are stored in local project data on your machine/server.</p>
+              </div>
+            </div>
+            <div class="about-step-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+            <div class="about-step">
+              <div class="about-step-num">02</div>
+              <div class="about-step-content">
+                <h4>AI-Assisted Content</h4>
+                <p>When Gemini is configured, the app can generate scripts, hashtags, SEO ideas, and analysis results. Without Gemini, those AI-backed features will not run.</p>
+              </div>
+            </div>
+            <div class="about-step-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+            <div class="about-step">
+              <div class="about-step-num">03</div>
+              <div class="about-step-content">
+                <h4>Queue & Publish</h4>
+                <p>Posts can be queued for scheduled publishing or published manually. The app applies small timing delays in some flows, but it cannot guarantee account safety or platform outcomes.</p>
+              </div>
+            </div>
+            <div class="about-step-arrow"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+            <div class="about-step">
+              <div class="about-step-num">04</div>
+              <div class="about-step-content">
+                <h4>Track & Review</h4>
+                <p>The dashboard shows queue state, workflow runs, and failures stored by this app. Backup/export features should be verified separately before relying on them operationally.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="about-section-title">Everything You Get</h2>
+        <div class="about-grid">
+          <div class="about-card"><div class="about-card-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><h3>AI Content Pipeline</h3><p>Gemini-backed endpoints can generate scripts, hashtags, SEO ideas, and analysis when a valid Gemini API key is configured.</p></div>
+          <div class="about-card"><div class="about-card-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 12a11 11 0 1 1-22 0 11 11 0 0 1 22 0z"/><path d="M12 7v5l3 3"/></svg></div><h3>Auto-Publish Queue</h3><p>Queue items can be published manually or by schedule to connected Facebook Pages and YouTube channels when credentials and upload requirements are satisfied.</p></div>
+          <div class="about-card"><div class="about-card-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><h3>Visual Workflow Builder</h3><p>Node-based automation engine with triggers, conditions, AI rewriting, delays, and multi-platform publishing — all drag-and-drop, no code needed.</p></div>
+          <div class="about-card"><div class="about-card-icon" style="background:linear-gradient(135deg,#ef4444,#b91c1c)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><h3>Hashtag & SEO Engine</h3><p>Auto-generates 15+ trending hashtags, SEO titles, and meta descriptions optimized for 2026 algorithms. Platform-specific, niche-targeted, data-driven.</p></div>
+          <div class="about-card"><div class="about-card-icon" style="background:linear-gradient(135deg,#10b981,#059669)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><h3>Live Analytics Dashboard</h3><p>Real-time overview with post counters, queue tracking, workflow runs, and failure monitoring. Know exactly how your automation is performing.</p></div>
+          <div class="about-card"><div class="about-card-icon" style="background:linear-gradient(135deg,#6366f1,#4338ca)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><h3>Enterprise Security</h3><p>All credentials stored locally on your server. Rate limiting, HTTP security headers, anti-source-access blocking, and Google Drive backup included.</p></div>
+          <div class="about-card"><div class="about-card-icon" style="background:linear-gradient(135deg,#f472b6,#db2777)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><h3>Publishing Controls</h3><p>Manual publish, retry, queue management, upload staging cleanup, and scheduled publishing controls are available for supported platforms.</p></div>
+          <div class="about-card"><div class="about-card-icon" style="background:linear-gradient(135deg,#2dd4bf,#0d9488)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></div><h3>Google Drive Backup</h3><p>Google Drive backup/export features exist in the product, but you should verify your own account setup and recovery flow before depending on them.</p></div>
+        </div>
+
+        <div class="about-use-cases">
+          <h2 class="about-section-title">Who Is This For?</h2>
+          <div class="about-cases">
+            <div class="about-case-card"><div class="about-case-icon">📱</div><h4>Content Creators</h4><p>Automate your entire content pipeline — from script to publish. Focus on creating, not scheduling.</p></div>
+            <div class="about-case-card"><div class="about-case-icon">🏢</div><h4>Agencies</h4><p>Manage multiple client accounts with automated workflows. Scale without hiring more staff.</p></div>
+            <div class="about-case-card"><div class="about-case-icon">🚀</div><h4>SaaS Founders</h4><p>Build lead pipelines that capture webhooks, score prospects, and push to Notion or email automatically.</p></div>
+            <div class="about-case-card"><div class="about-case-icon">🛍️</div><h4>Store Owners</h4><p>Auto-post products, promotions, and updates to Facebook and YouTube from your OrniStore.</p></div>
+          </div>
+        </div>
+
+        <div class="about-faq">
+          <h2 class="about-section-title">Frequently Asked Questions</h2>
+          <div class="about-faq-list">
+            <div class="about-faq-item"><div class="about-faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Do I need programming experience?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="about-faq-a">Zero. The workflow builder is completely visual — drag, connect, configure. No code required.</div></div>
+            <div class="about-faq-item"><div class="about-faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Is this a real automation system?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="about-faq-a">Yes. It connects to real Facebook Graph API and YouTube Data API. When you set your credentials, posts go live to your actual pages and channels.</div></div>
+            <div class="about-faq-item"><div class="about-faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Will Facebook or YouTube ban my account?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="about-faq-a">No app can honestly guarantee that. This project uses official APIs where implemented, but your permissions, usage pattern, and platform policy compliance still matter.</div></div>
+            <div class="about-faq-item"><div class="about-faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Where is my data stored?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="about-faq-a">This app stores credentials, queue items, workflows, and run data in local project files on the machine/server running it. Optional backup/export flows should be tested by you before production use.</div></div>
+            <div class="about-faq-item"><div class="about-faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Do I need a Gemini API key?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="about-faq-a">Yes, for the Gemini-backed AI features. Without a Gemini API key, those AI endpoints return errors instead of using a fake local fallback.</div></div>
+            <div class="about-faq-item"><div class="about-faq-q" onclick="this.parentElement.classList.toggle('open')"><span>Can I run this on my phone?</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="about-faq-a">Yes. The interface is responsive and PWA-enabled. You can install it as an app and manage your automation from anywhere.</div></div>
+          </div>
+        </div>
+
+        <div class="about-tech" style="padding-bottom:24px">
+          <h2 class="about-tech-title">Built With</h2>
+          <div class="about-tech-list">
+            <span class="about-tech-item">Node.js</span><span class="about-tech-item">Vanilla JS</span><span class="about-tech-item">CSS3</span>
+            <span class="about-tech-item">Gemini AI</span><span class="about-tech-item">Facebook Graph API</span><span class="about-tech-item">YouTube Data API</span>
+            <span class="about-tech-item">Google Drive API</span><span class="about-tech-item">OAuth 2.0</span><span class="about-tech-item">PWA</span>
+          </div>
+        </div>
+
+        <div class="about-cta" style="padding-bottom:16px">
+          <h2>Ready to Automate Your Social Media?</h2>
+          <p>Connect your platforms, set your preferences, and let AI handle the rest.</p>
+          <button class="about-cta-btn" onclick="document.getElementById('navAutopilot').click()">Go to Social Autopilot →</button>
+        </div>
+
+        <div class="about-footer" style="padding-bottom:32px">
+          <p>© 2026 Prime Social Automation. All rights reserved.</p>
+          <p class="about-email">proplan3069@gmail.com</p>
+          <p class="about-version">Version 2.0.0 · Build 07-2026</p>
+        </div>
+      </section>
+
+            <!-- ═══ ADMIN PANEL ═══ -->
+            <section class="viewport-section" id="admin-view">
+              <div class="section-header" style="padding:0;margin-top:30px">
+                <h1>🛡️ Admin Panel</h1>
+                <p>Monitor visitors, user activity, and platform analytics.</p>
+              </div>
+
+              <!-- Stats Cards -->
+              <div class="admin-stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0">
+                <div class="admin-stat-card" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:14px;padding:20px;text-align:center">
+                  <div style="font-size:2rem;font-weight:800;color:#8b5cf6" id="adminTotalUsers">0</div>
+                  <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px">Total Users</div>
+                </div>
+                <div class="admin-stat-card" style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:14px;padding:20px;text-align:center">
+                  <div style="font-size:2rem;font-weight:800;color:#06b6d4" id="adminTodayVisits">0</div>
+                  <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px">Today's Visits</div>
+                </div>
+                <div class="admin-stat-card" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:14px;padding:20px;text-align:center">
+                  <div style="font-size:2rem;font-weight:800;color:#22c55e" id="adminActiveSessions">0</div>
+                  <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px">Active Sessions</div>
+                </div>
+                <div class="admin-stat-card" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:14px;padding:20px;text-align:center">
+                  <div style="font-size:2rem;font-weight:800;color:#fbbf24" id="adminTotalRevenue">$0</div>
+                  <div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px">Revenue</div>
+                </div>
+              </div>
+
+              <!-- Google Analytics Embed -->
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;margin:20px 0">
+                <h3 style="margin:0 0 12px;color:white;font-size:1rem">📊 Google Analytics</h3>
+                <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin:0 0 16px">Paste your GA Measurement ID (G-XXXXXXX) in Settings → API Integrations to activate tracking.</p>
+                <div id="adminGAPlaceholder" style="background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.1);border-radius:10px;padding:40px;text-align:center;color:rgba(255,255,255,0.3);font-size:0.85rem">
+                  🔗 Connect Google Analytics in Settings to see live visitor data here
+                </div>
+              </div>
+
+              <!-- Recent Activity Log -->
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;margin:20px 0">
+                <h3 style="margin:0 0 12px;color:white;font-size:1rem">📋 Recent Activity</h3>
+                <div id="adminActivityLog" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto">
+                  <div style="font-size:0.82rem;color:rgba(255,255,255,0.35);padding:12px;text-align:center">No activity yet — logs will appear here as users interact with the platform.</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ═══ PLANS & PRICING ═══ -->
+            <section class="viewport-section" id="pricing-view">
+              <div class="section-header" style="padding:0;margin-top:30px">
+                <h1>💰 Plans & Pricing</h1>
+                <p>Choose the plan that fits your automation needs. Upgrade anytime.</p>
+              </div>
+
+              <!-- Period Toggle -->
+              <div style="display:flex;justify-content:center;gap:8px;margin:24px 0">
+                <button class="pricing-page-tab active" data-period="weekly" onclick="switchPricingPeriod('weekly')" style="padding:8px 24px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(139,92,246,0.15);color:white;font-weight:600;font-size:0.85rem;cursor:pointer">Weekly</button>
+                <button class="pricing-page-tab" data-period="monthly" onclick="switchPricingPeriod('monthly')" style="padding:8px 24px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-weight:600;font-size:0.85rem;cursor:pointer">Monthly</button>
+              </div>
+
+              <!-- Plans Grid -->
+              <div class="pricing-page-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:700px;margin:0 auto">
+                <!-- Lite Plan -->
+                <div class="pricing-page-card" data-period="weekly" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px 24px;text-align:center;transition:all 0.3s">
+                  <div style="font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Lite</div>
+                  <div style="font-size:2.4rem;font-weight:800;color:white"><span style="font-size:1rem;vertical-align:top">$</span>4.9<span style="font-size:0.85rem;color:rgba(255,255,255,0.4)">/wk</span></div>
+                  <div style="font-size:0.72rem;color:#22c55e;margin:6px 0 18px">SAVE 20% vs $6.1</div>
+                  <div style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:20px">
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Social Autopilot</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ AI Content Pipeline</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ 50 AI generations/week</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Basic scheduling</div>
+                  </div>
+                  <button style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(139,92,246,0.3);background:rgba(139,92,246,0.1);color:#8b5cf6;font-weight:600;font-size:0.85rem;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(139,92,246,0.2)'" onmouseout="this.style.background='rgba(139,92,246,0.1)'">Get Started</button>
+                </div>
+
+                <!-- Pro Plus Plan -->
+                <div class="pricing-page-card" data-period="weekly" style="background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(6,182,212,0.05));border:1px solid rgba(139,92,246,0.3);border-radius:16px;padding:28px 24px;text-align:center;transition:all 0.3s;position:relative">
+                  <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:white;padding:3px 14px;border-radius:12px;font-size:0.65rem;font-weight:700;letter-spacing:0.5px">⭐ POPULAR</div>
+                  <div style="font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Pro Plus</div>
+                  <div style="font-size:2.4rem;font-weight:800;color:white"><span style="font-size:1rem;vertical-align:top">$</span>6.1<span style="font-size:0.85rem;color:rgba(255,255,255,0.4)">/wk</span></div>
+                  <div style="font-size:0.72rem;color:#22c55e;margin:6px 0 18px">SAVE 25% vs $8.2</div>
+                  <div style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:20px">
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Unlimited AI generations</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ AI Video Storyboard</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Multi-platform auto-post</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Priority support</div>
+                  </div>
+                  <button style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:white;font-weight:600;font-size:0.85rem;cursor:pointer;transition:all 0.2s" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Get Pro Plus</button>
+                </div>
+              </div>
+
+              <!-- Monthly plans (hidden by default) -->
+              <div class="pricing-page-cards monthly-plans" style="display:none;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:700px;margin:0 auto">
+                <div class="pricing-page-card" data-period="monthly" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px 24px;text-align:center">
+                  <div style="font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Lite</div>
+                  <div style="font-size:2.4rem;font-weight:800;color:white"><span style="font-size:1rem;vertical-align:top">$</span>19.9<span style="font-size:0.85rem;color:rgba(255,255,255,0.4)">/mo</span></div>
+                  <div style="font-size:0.72rem;color:#22c55e;margin:6px 0 18px">SAVE 35% vs $30.6</div>
+                  <div style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:20px">
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Social Autopilot</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ AI Content Pipeline</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ 200 AI generations/month</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Basic scheduling</div>
+                  </div>
+                  <button style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(139,92,246,0.3);background:rgba(139,92,246,0.1);color:#8b5cf6;font-weight:600;font-size:0.85rem;cursor:pointer">Get Started</button>
+                </div>
+                <div class="pricing-page-card" data-period="monthly" style="background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(6,182,212,0.05));border:1px solid rgba(139,92,246,0.3);border-radius:16px;padding:28px 24px;text-align:center;position:relative">
+                  <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:white;padding:3px 14px;border-radius:12px;font-size:0.65rem;font-weight:700">⭐ BEST VALUE</div>
+                  <div style="font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Pro Plus</div>
+                  <div style="font-size:2.4rem;font-weight:800;color:white"><span style="font-size:1rem;vertical-align:top">$</span>22<span style="font-size:0.85rem;color:rgba(255,255,255,0.4)">/mo</span></div>
+                  <div style="font-size:0.72rem;color:#22c55e;margin:6px 0 18px">SAVE 40% vs $36.7</div>
+                  <div style="display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:20px">
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Unlimited AI generations</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ AI Video Storyboard</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Multi-platform auto-post</div>
+                    <div style="font-size:0.82rem;color:rgba(255,255,255,0.7)">✅ Priority support</div>
+                  </div>
+                  <button style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8b5cf6,#06b6d4);color:white;font-weight:600;font-size:0.85rem;cursor:pointer">Get Pro Plus</button>
+                </div>
+              </div>
+
+              <div style="text-align:center;margin-top:24px;font-size:0.78rem;color:rgba(255,255,255,0.35)">🛡️ 7-day money-back guarantee · Cancel anytime · Secure payments</div>
+            </section>
+
+            <section class="viewport-section" id="settings-view">
+        <!-- ═══ SETTINGS / API INTEGRATIONS ═══ -->
+        <div class="settings-in-overview">
+          <div class="section-header" style="padding:0;margin-top:30px">
+            <h1>⚙️ API Integrations</h1>
+            <p>Connect real services to make your automation nodes live. Keys are stored locally only.</p>
+          </div>
+          <div class="settings-save-bar" id="settingsSaveBar" style="display:none">
+            <span class="settings-save-msg">Unsaved changes</span>
+            <button class="btn-settings-save" id="btnSaveAllCreds" onclick="saveAllCredentials()">💾 Save All Changes</button>
+          </div>
+          <div class="settings-grid">
+            <div class="settings-card" id="card-gemini">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+                <div class="settings-card-info"><h3>Gemini AI</h3><p>Powers the AI Rewrite node with real content generation</p></div>
+                <div class="settings-status-dot" id="status-gemini"></div>
+              </div>
+              <div class="settings-fields">
+                <div class="settings-field-group">
+                  <label>Google AI API Key</label>
+                  <div class="settings-input-wrap">
+                    <input type="password" id="cred-geminiApiKey" placeholder="AIza..." class="settings-input" oninput="markSettingsDirty()">
+                    <button class="settings-reveal-btn" onclick="toggleReveal('cred-geminiApiKey', this)">👁</button>
+                  </div>
+                  <span class="settings-hint">Get free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></span>
+                </div>
+              </div>
+              <div class="settings-card-footer">
+                <button class="btn-test" onclick="testConnection('gemini')" id="test-gemini">⚡ Test Connection</button>
+                <span class="settings-test-result" id="result-gemini"></span>
+              </div>
+            </div>
+
+            <div class="settings-card" id="card-facebook">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#1877f2,#0d5ab9)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                </div>
+                <div class="settings-card-info"><h3>Facebook API</h3><p>Real Facebook Page posting — requires Meta App</p></div>
+                <div class="settings-status-dot" id="status-facebook"></div>
+              </div>
+              <div class="settings-fields">
+                <div class="settings-field-group"><label>Facebook App ID</label><input type="text" id="cred-facebookAppId" placeholder="123456789012345" class="settings-input" oninput="markSettingsDirty()"><span class="settings-hint">Get from <a href="https://developers.facebook.com" target="_blank">developers.facebook.com</a> → My Apps → Create App</span></div>
+                <div class="settings-field-group"><label>Facebook App Secret</label><input type="password" id="cred-facebookAppSecret" placeholder="abc123def456..." class="settings-input" oninput="markSettingsDirty()"></div>
+                <div class="settings-field-group"><label>Facebook Page Access Token</label><input type="password" id="cred-facebookPageToken" placeholder="EAAB..." class="settings-input" oninput="markSettingsDirty()"><span class="settings-hint">Login below → auto-saves. Or paste manually. Allows posting to your Page.</span></div>
+              </div>
+              <div class="settings-card-footer">
+                <button class="btn-test" onclick="window.open('/api/facebook/login','fbOAuth','width=600,height=700')" id="test-facebook">🔗 Login with Facebook</button>
+                <span class="settings-test-result" id="result-facebook"></span>
+              </div>
+            </div>
+            <div class="settings-card" id="card-youtube">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#ff0000,#cc0000)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+                </div>
+                <div class="settings-card-info"><h3>YouTube API</h3><p>Real YouTube video publishing — requires Google Cloud Project</p></div>
+                <div class="settings-status-dot" id="status-youtube"></div>
+              </div>
+              <div class="settings-fields">
+                <div class="settings-field-group"><label>YouTube Client ID</label><input type="text" id="cred-youtubeClientId" placeholder="123456789012-xxxxx.apps.googleusercontent.com" class="settings-input" oninput="markSettingsDirty()"><span class="settings-hint">Get from <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → APIs & Services → Credentials</span></div>
+                <div class="settings-field-group"><label>YouTube Client Secret</label><input type="password" id="cred-youtubeClientSecret" placeholder="GOCSPX-xxxxx" class="settings-input" oninput="markSettingsDirty()"></div>
+                <div class="settings-field-group"><label>YouTube Refresh Token</label><input type="password" id="cred-youtubeRefreshToken" placeholder="1//0xxxxx..." class="settings-input" oninput="markSettingsDirty()"><span class="settings-hint">Login below → authorize → token auto-saves here</span></div>
+              </div>
+              <div class="settings-card-footer">
+                <button class="btn-test" onclick="window.open('/api/youtube/login','ytOAuth','width=600,height=700')" id="test-youtube">🔗 Login with Google</button>
+                <span class="settings-test-result" id="result-youtube"></span>
+              </div>
+            </div>
+            <div class="settings-card" id="card-email">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div class="settings-card-info"><h3>Email (SMTP)</h3><p>Send real emails via Gmail or any SMTP provider</p></div>
+                <div class="settings-status-dot" id="status-email"></div>
+              </div>
+              <div class="settings-fields">
+                <div class="settings-fields-row">
+                  <div class="settings-field-group"><label>SMTP Host</label><input type="text" id="cred-smtpHost" placeholder="smtp.gmail.com" class="settings-input" oninput="markSettingsDirty()"></div>
+                  <div class="settings-field-group" style="max-width:100px"><label>Port</label><input type="number" id="cred-smtpPort" placeholder="587" class="settings-input" oninput="markSettingsDirty()"></div>
+                </div>
+                <div class="settings-field-group"><label>Email Address</label><input type="email" id="cred-smtpUser" placeholder="yourname@gmail.com" class="settings-input" oninput="markSettingsDirty()"></div>
+                <div class="settings-field-group">
+                  <label>App Password / SMTP Password</label>
+                  <div class="settings-input-wrap">
+                    <input type="password" id="cred-smtpPass" placeholder="App password (not your login password)" class="settings-input" oninput="markSettingsDirty()">
+                    <button class="settings-reveal-btn" onclick="toggleReveal('cred-smtpPass', this)">👁</button>
+                  </div>
+                  <span class="settings-hint">Gmail: Enable 2FA → <a href="https://myaccount.google.com/apppasswords" target="_blank">App Passwords</a></span>
+                </div>
+              </div>
+              <div class="settings-card-footer">
+                <button class="btn-test" onclick="testConnection('email')" id="test-email">⚡ Test Connection</button>
+                <span class="settings-test-result" id="result-email"></span>
+              </div>
+            </div>
+            <div class="settings-card" id="card-telegram">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#26a5e4,#0088cc)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-2.012 9.475c-.148.658-.538.818-1.09.508l-3.007-2.215-1.452 1.396c-.16.16-.296.296-.608.296l.216-3.063 5.577-5.035c.243-.216-.053-.335-.374-.12l-6.89 4.34-2.97-.925c-.645-.203-.658-.645.135-.955l11.597-4.472c.538-.195 1.008.12.878.77z"/></svg>
+                </div>
+                <div class="settings-card-info"><h3>Telegram Bot</h3><p>Send real-time alerts and notifications via Telegram</p></div>
+                <div class="settings-status-dot" id="status-telegram"></div>
+              </div>
+              <div class="settings-fields">
+                <div class="settings-field-group">
+                  <label>Bot Token</label>
+                  <div class="settings-input-wrap">
+                    <input type="password" id="cred-telegramBotToken" placeholder="123456:ABC-DEF..." class="settings-input" oninput="markSettingsDirty()">
+                    <button class="settings-reveal-btn" onclick="toggleReveal('cred-telegramBotToken', this)">👁</button>
+                  </div>
+                  <span class="settings-hint">Get from <a href="https://t.me/BotFather" target="_blank">@BotFather</a> on Telegram</span>
+                </div>
+                <div class="settings-field-group"><label>Default Chat ID</label><input type="text" id="cred-telegramChatId" placeholder="-100xxxxxxxxx or @username" class="settings-input" oninput="markSettingsDirty()"><span class="settings-hint">Message your bot, then visit: api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</span></div>
+              </div>
+              <div class="settings-card-footer">
+                <button class="btn-test" onclick="testConnection('telegram')" id="test-telegram">⚡ Test Connection</button>
+                <span class="settings-test-result" id="result-telegram"></span>
+              </div>
+            </div>
+            <div class="settings-card" id="card-googlesheets">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#34a853,#0f9d58)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                </div>
+                <div class="settings-card-info"><h3>Google Sheets</h3><p>Log leads, runs, and data directly to a Google Sheet</p></div>
+                <div class="settings-status-dot" id="status-googlesheets"></div>
+              </div>
+              <div class="settings-fields">
+                <div class="settings-field-group"><label>Default Spreadsheet ID</label><input type="text" id="cred-sheetsSpreadsheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" class="settings-input" oninput="markSettingsDirty()"><span class="settings-hint">From the spreadsheet URL: docs.google.com/spreadsheets/d/<strong>ID</strong>/edit</span></div>
+                <div class="settings-field-group"><label>Service Account JSON</label><textarea id="cred-googleServiceAccount" placeholder='Paste your service account JSON here: {"type": "service_account", "project_id": "..."}' class="settings-input settings-textarea" rows="4" oninput="markSettingsDirty()"></textarea><span class="settings-hint">Create at <a href="https://console.cloud.google.com/iam-admin/serviceaccounts" target="_blank">Google Cloud Console</a> → enable Sheets API → share your sheet with the service account email</span></div>
+              </div>
+              <div class="settings-card-footer">
+                <button class="btn-test" onclick="testConnection('googlesheets')" id="test-googlesheets">⚡ Test Connection</button>
+                <span class="settings-test-result" id="result-googlesheets"></span>
+              </div>
+            </div>
+            <div class="settings-card" id="card-slack">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#4a154b,#611f69)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
+                </div>
+                <div class="settings-card-info"><h3>Slack</h3><p>Post workflow notifications to any Slack channel</p></div>
+                <div class="settings-status-dot" id="status-slack"></div>
+              </div>
+              <div class="settings-fields">
+                <div class="settings-field-group">
+                  <label>Incoming Webhook URL</label>
+                  <div class="settings-input-wrap">
+                    <input type="password" id="cred-slackWebhookUrl" placeholder="https://hooks.slack.com/services/T.../B.../..." class="settings-input" oninput="markSettingsDirty()">
+                    <button class="settings-reveal-btn" onclick="toggleReveal('cred-slackWebhookUrl', this)">👁</button>
+                  </div>
+                  <span class="settings-hint">Create at <a href="https://api.slack.com/apps" target="_blank">api.slack.com/apps</a> → Incoming Webhooks</span>
+                </div>
+              </div>
+              <div class="settings-card-footer">
+                <button class="btn-test" onclick="testConnection('slack')" id="test-slack">⚡ Test Connection</button>
+                <span class="settings-test-result" id="result-slack"></span>
+              </div>
+            </div>
+            <div class="settings-card" id="card-discord">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#5865F2,#4752c4)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.079.11 18.1.128 18.11a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                </div>
+                <div class="settings-card-info"><h3>Discord</h3><p>Send alerts to Discord channels via webhook</p></div>
+                <div class="settings-status-dot" id="status-discord"></div>
+              </div>
+              <div class="settings-fields">
+                <div class="settings-field-group">
+                  <label>Discord Webhook URL</label>
+                  <div class="settings-input-wrap">
+                    <input type="password" id="cred-discordWebhookUrl" placeholder="https://discord.com/api/webhooks/..." class="settings-input" oninput="markSettingsDirty()">
+                    <button class="settings-reveal-btn" onclick="toggleReveal('cred-discordWebhookUrl', this)">👁</button>
+                  </div>
+                  <span class="settings-hint">Discord → Server Settings → Integrations → Webhooks</span>
+                </div>
+              </div>
+              <div class="settings-card-footer">
+                <button class="btn-test" onclick="testConnection('discord')" id="test-discord">⚡ Test Connection</button>
+                <span class="settings-test-result" id="result-discord"></span>
+              </div>
+            </div>
+            <div class="settings-card" id="card-notion">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#374151,#111827)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.887l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.14c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/></svg>
+                </div>
+                <div class="settings-card-info"><h3>Notion</h3><p>Create database entries and pages in Notion</p></div>
+                <div class="settings-status-dot" id="status-notion"></div>
+              </div>
+              <div class="settings-fields">
+                <div class="settings-field-group">
+                  <label>Notion Integration Token</label>
+                  <div class="settings-input-wrap">
+                    <input type="password" id="cred-notionToken" placeholder="secret_..." class="settings-input" oninput="markSettingsDirty()">
+                    <button class="settings-reveal-btn" onclick="toggleReveal('cred-notionToken', this)">👁</button>
+                  </div>
+                  <span class="settings-hint">Create at <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a></span>
+                </div>
+                <div class="settings-field-group"><label>Default Database ID</label><input type="text" id="cred-notionDatabaseId" placeholder="32-char database ID from page URL" class="settings-input" oninput="markSettingsDirty()"></div>
+              </div>
+              <div class="settings-card-footer">
+                <button class="btn-test" onclick="testConnection('notion')" id="test-notion">⚡ Test Connection</button>
+                <span class="settings-test-result" id="result-notion"></span>
+              </div>
+            </div>
+            <div class="settings-card" id="card-backup">
+              <div class="settings-card-header">
+                <div class="settings-card-icon" style="background:linear-gradient(135deg,#34a853,#1e8e3e)">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                </div>
+                <div class="settings-card-info"><strong>Data Backup</strong><span>Backup & restore your data to Google Drive</span></div>
+              </div>
+              <div class="settings-card-body">
+                <div class="settings-field-row">
+                  <div class="settings-field-group">
+                    <label>Auto Backup to Google Drive</label>
+                    <label class="switch-control" style="margin-top:6px"><input type="checkbox" id="chkAutoDriveBackup"><span class="switch-slider"></span></label>
+                  </div>
+                </div>
+                <div class="settings-field-row">
+                  <div class="settings-field-group">
+                    <label>Google Drive Backup</label>
+                    <div class="backup-buttons" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+                      <button class="btn-drive" id="btnDriveLogin" onclick="driveAuth()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M12 6v6l4 2"/></svg> Connect Drive</button>
+                      <button class="btn-drive" id="btnBackupNow" onclick="backupToDrive()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg> Backup Now</button>
+                      <button class="btn-drive" id="btnRestoreDrive" onclick="restoreFromDrive()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Restore</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="settings-field-row" id="driveStatusRow" style="display:none"><div class="settings-field-group"><label>Drive Status</label><div style="margin-top:4px;font-size:0.85rem;color:var(--text-muted)" id="driveStatus">Not connected</div></div></div>
+                <div class="settings-field-row" id="backupHistoryRow" style="display:none"><div class="settings-field-group"><label>Last Backup</label><div style="margin-top:4px;font-size:0.85rem;color:var(--text-muted)" id="lastBackupTime">Never</div></div></div>
+              </div>
+              <div class="settings-card-footer"><span class="settings-test-result" id="result-backup"></span></div>
+            </div>
+          </div>
+
+          <!-- API Connection Status Dashboard -->
+          <div style="margin-top: 24px;">
+            <h3 class="panel-title" style="margin-bottom: 14px;">🔌 API Connection Status</h3>
+            <div id="apiStatusGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;">
+              <div class="settings-card" style="border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%;" id="dot-gemini"></div>
+                  <div><strong style="font-size: 0.82rem;">Gemini AI</strong><br><span style="font-size: 0.7rem; color: var(--secondary);" id="statusText-gemini">Checking...</span></div>
+                </div>
+              </div>
+              <div class="settings-card" style="border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%;" id="dot-facebook"></div>
+                  <div><strong style="font-size: 0.82rem;">Facebook API</strong><br><span style="font-size: 0.7rem; color: var(--secondary);" id="statusText-facebook">Checking...</span></div>
+                </div>
+              </div>
+              <div class="settings-card" style="border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%;" id="dot-youtube"></div>
+                  <div><strong style="font-size: 0.82rem;">YouTube API</strong><br><span style="font-size: 0.7rem; color: var(--secondary);" id="statusText-youtube">Checking...</span></div>
+                </div>
+              </div>
+              <div class="settings-card" style="border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%;" id="dot-smtp"></div>
+                  <div><strong style="font-size: 0.82rem;">Email (SMTP)</strong><br><span style="font-size: 0.7rem; color: var(--secondary);" id="statusText-smtp">Checking...</span></div>
+                </div>
+              </div>
+              <div class="settings-card" style="border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%;" id="dot-telegram"></div>
+                  <div><strong style="font-size: 0.82rem;">Telegram Bot</strong><br><span style="font-size: 0.7rem; color: var(--secondary);" id="statusText-telegram">Checking...</span></div>
+                </div>
+              </div>
+              <div class="settings-card" style="border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%;" id="dot-slack"></div>
+                  <div><strong style="font-size: 0.82rem;">Slack</strong><br><span style="font-size: 0.7rem; color: var(--secondary);" id="statusText-slack">Checking...</span></div>
+                </div>
+              </div>
+              <div class="settings-card" style="border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%;" id="dot-discord"></div>
+                  <div><strong style="font-size: 0.82rem;">Discord</strong><br><span style="font-size: 0.7rem; color: var(--secondary);" id="statusText-discord">Checking...</span></div>
+                </div>
+              </div>
+              <div class="settings-card" style="border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%;" id="dot-notion"></div>
+                  <div><strong style="font-size: 0.82rem;">Notion</strong><br><span style="font-size: 0.7rem; color: var(--secondary);" id="statusText-notion">Checking...</span></div>
+                </div>
+              </div>
+              <div class="settings-card" style="border: 1px solid rgba(255,255,255,0.06); padding: 14px; border-radius: 10px; background: var(--card-bg);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%;" id="dot-sheets"></div>
+                  <div><strong style="font-size: 0.82rem;">Google Sheets</strong><br><span style="font-size: 0.7rem; color: var(--secondary);" id="statusText-sheets">Checking...</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. AUTOMATION VIEW (real engine + node editor) -->
+      <section class="viewport-section" id="automation-view">
+        <div class="section-header">
+          <h1>Automation Engine</h1>
+          <p>Real backend runner — webhooks, schedules, conditions, and Social Autopilot handoff.</p>
+        </div>
+
+        <div class="ae-layout">
+          <aside class="ae-sidebar">
+            <div class="ae-side-block">
+              <div class="ae-side-head">
+                <h3>Workflows</h3>
+                <div class="ae-side-actions">
+                  <button class="btn-secondary btn-sm" id="aeNewBtn" title="New">+</button>
+                  <button class="btn-secondary btn-sm" id="aeDeleteBtn" title="Delete">⌫</button>
+                </div>
+              </div>
+              <div id="aeWorkflowList" class="ae-wf-list"></div>
+            </div>
+
+            <div class="ae-side-block">
+              <h3>Node Palette</h3>
+              <div id="aePalette" class="ae-palette"></div>
+            </div>
+
+            <div class="ae-side-block">
+              <h3>Schedule</h3>
+              <label class="ae-check"><input type="checkbox" id="aeScheduleEnabled" /> Auto-run enabled</label>
+              <label class="ae-field"><span>Every (minutes)</span><input type="number" id="aeScheduleMinutes" min="1" value="60" /></label>
+            </div>
+
+            <div class="ae-side-block">
+              <h3>Webhook Trigger</h3>
+              <input class="ae-webhook" id="aeWebhookUrl" readonly />
+              <button class="btn-secondary btn-sm" id="aeCopyWebhook">Copy Webhook URL</button>
+            </div>
+
+            <div class="flow-action-card">
+              <button class="btn-secondary btn-large" id="aeSaveBtn">Save Workflow</button>
+              <button class="btn-primary btn-large btn-glow" id="btnRunWorkflow">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                Execute Workflow
+              </button>
+            </div>
+          </aside>
+
+          <div class="ae-main">
+            <div class="ae-toolbar">
+              <div class="ae-toolbar-fields">
+                <input id="aeWorkflowName" placeholder="Workflow name" />
+                <input id="aeWorkflowDesc" placeholder="Description" />
+              </div>
+              <span class="canvas-indicator"><span class="indicator-dot green"></span> Engine live</span>
+              <span class="canvas-title" id="aeCanvasTitle">Workflow</span>
+            </div>
+
+            <div class="ae-workspace-row">
+              <div class="ae-canvas-wrap">
+                <div class="node-canvas-inner ae-canvas-inner" id="aeCanvasInner">
+                  <svg class="node-canvas-svg" id="aeCanvasSvg"></svg>
+                  <div class="ae-node-grid" id="aeNodeGrid"></div>
+                </div>
+              </div>
+
+              <div class="ae-right">
+                <div class="ae-side-block grow">
+                  <h3>Node Settings</h3>
+                  <div id="aeInspector" class="ae-inspector"></div>
+                </div>
+                <div class="ae-side-block grow">
+                  <h3>Run History</h3>
+                  <div id="aeRunHistory" class="ae-run-history"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. GENERATIVE VIEW (AI Image, Video & Faceless Creation) -->
+      <section class="viewport-section" id="generative-view">
+        <div class="section-header">
+          <h1>Video Storyboard Studio</h1>
+          <p>AI-powered video storyboard generation for faceless and face content channels.</p>
+        </div>
+
+        <div class="studio-layout">
+          <!-- Left Control Panel -->
+          <div class="studio-sidebar">
+            <!-- Video Planner -->
+            <div class="studio-panel-content active" id="panelVideoPlanner">
+              <div class="form-group">
+                <label for="videoTopic">Video Channel Niche / Topic</label>
+                <input type="text" id="videoTopic" placeholder="e.g. 5 AI automation rules you must know" value="SaaS AI Automations to Build in 2026">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group half">
+                  <label for="videoType">Video Mode</label>
+                  <select id="videoType">
+                    <option value="faceless">Faceless (Voiceover + Overlay)</option>
+                    <option value="face">Face (Talking Head + Cues)</option>
+                  </select>
+                </div>
+                <div class="form-group half">
+                  <label for="videoAudience">Target Audience</label>
+                  <select id="videoAudience">
+                    <option value="freelancers">Freelancers & Creators</option>
+                    <option value="developers">SaaS Developers</option>
+                    <option value="business">Business Owners</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group" style="width: 100%;">
+                  <label for="videoVoice">Voice / Presenter Style</label>
+                  <select id="videoVoice">
+                    <option value="deep">Deep Cinematic Male</option>
+                    <option value="energetic">Energetic Tech Host</option>
+                    <option value="calm">Calm Professional Female</option>
+                  </select>
+                </div>
+              </div>
+
+              <button class="btn-primary btn-glow" id="btnGenerateScript">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                  <path d="M12 6v6l4 2"></path>
+                </svg>
+                Compose Video Storyboard
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Studio Viewer Canvas -->
+          <div class="studio-viewer">
+            <div class="viewer-header">
+              <span class="viewer-status-text">Studio Output Monitor</span>
+              <span class="viewer-resolution">1920 x 1080px</span>
+            </div>
+
+            <div class="viewer-screen-container" id="viewerScreen">
+              <!-- Grid Background -->
+              <div class="viewer-grid-bg"></div>
+              
+              <!-- Blank State -->
+              <div class="viewer-blank" id="viewerBlankState">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <p>Awaiting creative execution. Select prompt settings and click generate.</p>
+              </div>
+
+              <!-- Generating Progress State -->
+              <div class="viewer-loader hidden" id="viewerLoader">
+                <div class="spinner-neon"></div>
+                <span id="viewerLoaderText">Initiating Generative Model Inference...</span>
+                <span class="percent-tracker" id="viewerLoaderPercent">0%</span>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill" id="viewerLoaderBar"></div>
+                </div>
+              </div>
+
+              <!-- Output: Video Script Storyboard -->
+              <div class="viewer-storyboard-result hidden" id="viewerStoryboardResult">
+                <div class="storyboard-header">
+                  <h3 id="storyboardTitle">Video Outline</h3>
+                  <button class="btn-primary btn-xs btn-glow" id="btnQueueStoryboard" style="margin-left: auto; font-size: 0.65rem; padding: 4px 10px; border-radius: 6px; border: none; cursor: pointer; color: white;">🚀 Queue for Autopilot</button>
+                </div>
+                
+                <div class="storyboard-slides-carousel">
+                  <div class="storyboard-list" id="storyboardList">
+                    <!-- Dynamic scenes list -->
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. VIDEO TOOLS -->
+      <section class="viewport-section" id="videotools-view">
+        <div class="section-header">
+          <h1>Video Tools</h1>
+          <p>Remove watermarks from AI-generated videos and clean up media assets.</p>
+        </div>
+        <div class="autopilot-panel" style="max-width: 700px; margin: 0 auto; padding: 30px;">
+          <h3 class="panel-title" style="margin-bottom: 16px;">🧹 Video Watermark Remover</h3>
+          <p style="color: var(--secondary); font-size: 0.8rem; margin-bottom: 20px;">Upload or paste a video URL from Gemini/other AI generators. The tool detects and removes watermark overlays, text overlays, and branding marks.</p>
+          <div class="form-group">
+            <label>Video File or URL</label>
+            <input type="text" id="watermarkInput" placeholder="Paste video URL or drag a file here..." class="settings-input" style="width: 100%;">
+          </div>
+          <div class="form-group">
+            <label>Watermark Type</label>
+            <select id="watermarkType" class="settings-input" style="width: 100%;">
+              <option value="auto">Auto-Detect</option>
+              <option value="text">Text Overlay</option>
+              <option value="logo">Logo / Branding</option>
+              <option value="corner">Corner Watermark</option>
+              <option value="center">Center Watermark</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Strength</label>
+            <select id="watermarkStrength" class="settings-input" style="width: 100%;">
+              <option value="gentle">Gentle (Preserve quality)</option>
+              <option value="medium" selected>Medium (Balanced)</option>
+              <option value="aggressive">Aggressive (Full removal)</option>
+            </select>
+          </div>
+          <button class="btn-primary btn-glow" id="btnRemoveWatermark" style="width: 100%; margin-top: 10px;">
+            🧹 Remove Watermark
+          </button>
+          <div id="watermarkResult" style="margin-top: 16px; display: none;">
+            <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 14px;">
+              <p style="color: #10b981; font-weight: 600; margin-bottom: 6px;">✅ Processing Complete</p>
+              <p id="watermarkResultText" style="color: var(--secondary); font-size: 0.78rem;"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. SOCIAL AUTOPILOT VIEW (Facebook & YouTube Manager) -->
+      <section class="viewport-section" id="autopilot-view">
+        <div class="section-header">
+          <h1>Social Autopilot Manager</h1>
+          <p>Connect your channels, monitor real-time viral trends, and set AI auto-publishing triggers.</p>
+        </div>
+
+        <div class="autopilot-layout">
+          <!-- Left Columns: Connections & Trend TIMING -->
+          <div class="autopilot-left">
+            
+            <!-- Connection Panel -->
+            <div class="autopilot-panel">
+              <h3 class="panel-title">Active Integrations</h3>
+              <p class="panel-desc">Manage credentials and authentication state for automatic publishing pages.</p>
+              
+              <div class="autopilot-grid">
+                <!-- FB Integration Card -->
+                <div class="integration-card" id="cardFbIntegrate">
+                  <div class="integration-header">
+                    <div class="integration-icon fb-color">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                    </div>
+                    <div class="integration-details">
+                      <h4>Facebook Page</h4>
+                      <span class="status-badge status-disconnected" id="statusFb">Disconnected</span>
+                    </div>
+                  </div>
+                  <div class="integration-body">
+                    <p class="info-desc" id="infoFb">Connect your Facebook Page to automate real page posts and image publishing.</p>
+                    <button class="btn-primary btn-sm" id="btnConnectFb">Connect Facebook Page</button>
+                    <div class="fb-page-panel hidden" id="fbPagePanel"></div>
+                  </div>
+                </div>
+
+                <!-- YT Integration Card -->
+                <div class="integration-card" id="cardYtIntegrate">
+                  <div class="integration-header">
+                    <div class="integration-icon yt-color">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+                    </div>
+                    <div class="integration-details">
+                      <h4>YouTube Creator</h4>
+                      <span class="status-badge status-disconnected" id="statusYt">Disconnected</span>
+                    </div>
+                  </div>
+                  <div class="integration-body">
+                    <p class="info-desc" id="infoYt">Connect your channel for real YouTube video uploads and scheduled publishing.</p>
+                    <button class="btn-primary btn-sm" id="btnConnectYt">Connect Channel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Viral Trends & timing Recommendation -->
+            <div class="autopilot-panel">
+              <h3 class="panel-title">Timing Notes</h3>
+              <p class="panel-desc">This section currently shows static sample guidance only. It is not connected to a live trend or analytics data source.</p>
+              
+              <div class="trends-container">
+                <div class="trend-row-item">
+                  <div class="trend-meta">
+                    <span class="trend-tag">Sample Topic</span>
+                    <span class="trend-score-lbl">Static Example</span>
+                  </div>
+                  <div class="trend-bar-bg">
+                    <div class="trend-bar-fill" style="width: 50%;"></div>
+                  </div>
+                  <p class="trend-recommendation">Use your own analytics before relying on publish timing decisions.</p>
+                </div>
+
+                <div class="trend-row-item">
+                  <div class="trend-meta">
+                    <span class="trend-tag">YouTube / Facebook</span>
+                    <span class="trend-score-lbl">Manual Review Needed</span>
+                  </div>
+                  <div class="trend-bar-bg">
+                    <div class="trend-bar-fill" style="width: 35%;"></div>
+                  </div>
+                  <p class="trend-recommendation">This UI block is informational only until a real trend data provider is integrated.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- AI Content Pipeline -->
+          <div class="autopilot-panel pipeline-panel">
+            <div class="pipeline-header">
+              <div>
+                <h3 class="panel-title">AI Content Pipeline</h3>
+                <p class="panel-desc">Auto-generate trending scripts → Create media → Queue for posting</p>
+              </div>
+              <button class="btn-pipeline-run" id="btnRunPipeline">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Run Pipeline
+              </button>
+            </div>
+
+            <div class="pipeline-steps">
+              <div class="pipeline-step" id="pipelineStep1">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                  <strong>Generate Trending Scripts</strong>
+                  <span>AI creates viral content ideas based on trends</span>
+                </div>
+                <div class="step-status" id="step1Status">⏳ Ready</div>
+              </div>
+              <div class="pipeline-connector"></div>
+              <div class="pipeline-step" id="pipelineStep2">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                  <strong>Create Media Assets</strong>
+                  <span>Auto-generates images/videos from scripts</span>
+                </div>
+                <div class="step-status" id="step2Status">⏳ Waiting</div>
+              </div>
+              <div class="pipeline-connector"></div>
+              <div class="pipeline-step" id="pipelineStep3">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                  <strong>Queue for Autopilot</strong>
+                  <span>Ready to post on your schedule</span>
+                </div>
+                <div class="step-status" id="step3Status">⏳ Waiting</div>
+              </div>
+            </div>
+
+            <div class="pipeline-output hidden" id="pipelineOutput">
+              <div class="pipeline-output-header">
+                <span>Generated Scripts Preview</span>
+                <span class="pipeline-badge" id="pipelineBadge">0 scripts</span>
+              </div>
+              <div class="pipeline-scripts" id="pipelineScripts"></div>
+            </div>
+
+            <div class="pipeline-progress hidden" id="pipelineProgress">
+              <div class="pipeline-progress-bar">
+                <div class="pipeline-progress-fill" id="pipelineProgressFill"></div>
+              </div>
+              <span class="pipeline-progress-text" id="pipelineProgressText">Starting pipeline...</span>
+            </div>
+          </div>
+
+          <!-- Right Column: Settings & Active Schedule Queue -->
+          <div class="autopilot-right">
+
+            <!-- Master Toggle Bar -->
+            <div class="master-toggle-bar" id="masterToggleBar">
+              <div class="master-toggle-info">
+                <div class="master-toggle-icon" id="masterToggleIcon">🤖</div>
+                <div class="master-toggle-text">
+                  <strong id="masterToggleLabel">Facebook & YouTube Automation</strong>
+                  <span id="masterToggleStatus">Tap to start — AI will post like a human</span>
+                </div>
+              </div>
+              <label class="master-switch">
+                <input type="checkbox" id="masterAutoToggle">
+                <span class="master-slider"></span>
+              </label>
+            </div>
+            
+            <!-- Autopilot Configuration Settings -->
+            <div class="autopilot-panel" id="autopilotConfigPanel">
+              <h3 class="panel-title">Autopilot Controls</h3>
+              
+              <div class="settings-list">
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <strong>Enable Social Autopilot</strong>
+                    <span>Allow AI to auto-publish scheduled queue items on trend spike</span>
+                  </div>
+                  <label class="switch-control">
+                    <input type="checkbox" id="chkAutoPublish">
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <strong>Auto-generate Creative Media</strong>
+                    <span>Automatically generate visual assets and scripts for active trends</span>
+                  </div>
+                  <label class="switch-control">
+                    <input type="checkbox" id="chkAutoGenerate">
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-row">
+                  <div class="setting-info">
+                    <strong>Auto Hashtag & SEO</strong>
+                    <span>Automatically add trending hashtags & SEO to every queued post</span>
+                  </div>
+                  <label class="switch-control">
+                    <input type="checkbox" id="chkAutoHashtag">
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Publish Timing & Content Variations -->
+            <div class="autopilot-panel" id="humanizerPanel">
+              <div class="panel-header-row">
+                <h3 class="panel-title">Publish Timing & Content Variations</h3>
+                <span class="humanizer-badge">Configured</span>
+              </div>
+              <p class="panel-desc">These controls add simple timing delays and content variations inside this app. They do not guarantee platform safety or detection avoidance.</p>
+              
+              <div class="humanizer-features">
+                <div class="humanizer-feature active">
+                  <span class="hf-icon">✍️</span>
+                  <div class="hf-content">
+                    <strong>Content Variation</strong>
+                    <span>Applies simple local text variations to queued content in some flows</span>
+                  </div>
+                  <span class="hf-check">✓</span>
+                </div>
+                <div class="humanizer-feature active">
+                  <span class="hf-icon">⏰</span>
+                  <div class="hf-content">
+                    <strong>Random Timing</strong>
+                    <span>Can delay scheduled publishing by a small time window</span>
+                  </div>
+                  <span class="hf-check">✓</span>
+                </div>
+                <div class="humanizer-feature active">
+                  <span class="hf-icon">🔄</span>
+                  <div class="hf-content">
+                    <strong>Short Delays</strong>
+                    <span>Adds a short delay before some publish actions</span>
+                  </div>
+                  <span class="hf-check">✓</span>
+                </div>
+                <div class="humanizer-feature active">
+                  <span class="hf-icon">🎭</span>
+                  <div class="hf-content">
+                    <strong>Metadata Variation</strong>
+                    <span>Stores local variation metadata for queued items when used</span>
+                  </div>
+                  <span class="hf-check">✓</span>
+                </div>
+                <div class="humanizer-feature active">
+                  <span class="hf-icon">📝</span>
+                  <div class="hf-content">
+                    <strong>Copyright Free</strong>
+                    <span>AI generates 100% original content — no plagiarism</span>
+                  </div>
+                  <span class="hf-check">✓</span>
+                </div>
+                <div class="humanizer-feature active">
+                  <span class="hf-icon">🚦</span>
+                  <div class="hf-content">
+                    <strong>Rate Limiting</strong>
+                    <span>Max N posts/hour — stays under FB's radar</span>
+                  </div>
+                  <span class="hf-check">✓</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Schedule Config -->
+            <div class="autopilot-panel">
+              <h3 class="panel-title">Posting Schedule</h3>
+              <p class="panel-desc">Set when and how often the Autopilot will post from the queue.</p>
+              
+              <div class="schedule-config">
+                <div class="schedule-row">
+                  <span class="schedule-label">Post Frequency</span>
+                  <select class="schedule-select" id="scheduleFrequency">
+                    <option value="daily">Every Day</option>
+                    <option value="2days" selected>Every 2 Days</option>
+                    <option value="3days">Every 3 Days</option>
+                    <option value="weekly">Once a Week</option>
+                  </select>
+                </div>
+                <div class="schedule-row">
+                  <span class="schedule-label">Posts Per Day</span>
+                  <div class="schedule-counter">
+                    <button class="counter-btn" id="postsPerDayMinus">−</button>
+                    <span class="counter-value" id="postsPerDayValue">5</span>
+                    <button class="counter-btn" id="postsPerDayPlus">+</button>
+                  </div>
+                </div>
+                <div class="schedule-row">
+                  <span class="schedule-label">Start Hour</span>
+                  <div class="schedule-times" style="gap:4px">
+                    <select class="schedule-select" id="scheduleStartHour" style="min-width:120px">
+                      <option value="0">12 AM (Midnight)</option>
+                      <option value="1">1 AM</option>
+                      <option value="2">2 AM</option>
+                      <option value="3">3 AM</option>
+                      <option value="4">4 AM</option>
+                      <option value="5">5 AM</option>
+                      <option value="6">6 AM</option>
+                      <option value="7">7 AM</option>
+                      <option value="8">8 AM</option>
+                      <option value="9">9 AM</option>
+                      <option value="10">10 AM</option>
+                      <option value="11">11 AM</option>
+                      <option value="12">12 PM (Noon)</option>
+                      <option value="13">1 PM</option>
+                      <option value="14">2 PM</option>
+                      <option value="15">3 PM</option>
+                      <option value="16">4 PM</option>
+                      <option value="17">5 PM</option>
+                      <option value="18">6 PM</option>
+                      <option value="19">7 PM</option>
+                      <option value="20">8 PM</option>
+                      <option value="21">9 PM</option>
+                      <option value="22">10 PM</option>
+                      <option value="23">11 PM</option>
+                    </select>
+                    <span class="schedule-label" style="font-weight:400;font-size:0.8rem;color:var(--text-muted)">Times auto-generated: <span id="generatedTimesDisplay">12:00, 12:12, 12:24, 12:36, 12:48</span></span>
+                  </div>
+                </div>
+                <div class="schedule-row">
+                  <span class="schedule-label">Schedule Status</span>
+                  <span class="schedule-status" id="scheduleStatus">⏸️ Paused — Enable Autopilot to start</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Manual Upload -->
+            <div class="autopilot-panel">
+              <h3 class="panel-title">Manual Upload</h3>
+              <p class="panel-desc">Upload your own photos/videos and write a caption to post directly.</p>
+              
+              <div class="upload-area" id="uploadArea">
+                <input type="file" id="fileInput" accept="image/*,video/*" hidden>
+                <div class="upload-dropzone" id="uploadDropzone">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <span class="upload-text" id="uploadText">Click to upload photo or video</span>
+                  <span class="upload-hint">Supports: JPG, PNG, MP4, MOV</span>
+                </div>
+                <div class="upload-preview hidden" id="uploadPreview">
+                  <img id="previewImage" src="" alt="Preview">
+                  <video id="previewVideo" src="" controls hidden></video>
+                  <button class="upload-remove-btn" id="uploadRemoveBtn">✕</button>
+                </div>
+              </div>
+
+              <div class="upload-caption">
+                <textarea id="uploadCaption" rows="2" placeholder="Write your caption / post text here..."></textarea>
+              </div>
+
+              <div class="upload-progress hidden" id="uploadProgressWrap">
+                <div class="upload-progress-head">
+                  <span id="uploadProgressLabel">Preparing upload...</span>
+                  <span id="uploadProgressPercent">0%</span>
+                </div>
+                <div class="upload-progress-bar">
+                  <div class="upload-progress-fill" id="uploadProgressFill"></div>
+                </div>
+                <button class="btn-secondary btn-sm upload-cancel-btn" id="uploadCancelBtn">Cancel Upload</button>
+              </div>
+
+              <div class="upload-actions">
+                <select class="upload-platform-select" id="uploadPlatform">
+                  <option value="fb">Facebook</option>
+                  <option value="yt">YouTube</option>
+                </select>
+                <button class="btn-primary btn-glow" id="btnAddManualPost">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add to Queue
+                </button>
+              </div>
+            </div>
+
+            <!-- Queue list -->
+            <div class="autopilot-panel flex-grow-panel">
+              <h3 class="panel-title">Autopilot Schedule Queue</h3>
+              <p class="panel-desc">Items queued from Generative Studio waiting to be posted automatically.</p>
+              
+              <div class="queue-list-container" id="autopilotQueueList">
+                <div class="queue-empty-state" id="queueEmptyState">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  <p>Queue is empty. Go to Generative Studio to create and queue posts!</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. FUNDAMENTALS HUB (AI Foundations & Productivity Templates) -->
+      <section class="viewport-section" id="fundamentals-view">
+        <div class="section-header">
+          <div class="section-header-left">
+            <h1>AI Fundamentals & Productivity Hub</h1>
+            <p>Understand prompt patterns and generate templates for freelance businesses, proposals, and SaaS scripts.</p>
+          </div>
+          <div class="section-header-toggle">
+            <span class="toggle-label" id="fundToggleLabel">⚡ Local Mode</span>
+            <label class="master-switch" style="width:44px;height:24px;">
+              <input type="checkbox" id="fundAiToggle">
+              <span class="master-slider" style="width:44px;height:24px;"></span>
+            </label>
+            <span class="toggle-label ai-label" id="fundAiLabel">🤖 Real AI</span>
+          </div>
+        </div>
+
+        <div class="fundamentals-layout">
+          <!-- Left: Prompt Sandbox -->
+          <div class="fund-panel">
+            <h3 class="panel-title">Prompt Engineering Sandbox</h3>
+            <p class="panel-desc">Test how different LLM systems (Gemini, ChatGPT, Claude) evaluate prompt variations.</p>
+
+            <div class="form-group">
+              <label for="promptSystemType">Select System Agent Role</label>
+              <select id="promptSystemType">
+                <option value="coder">Senior Software Engineer (Detailed Code & Architecture)</option>
+                <option value="copywriter">Direct-Response Copywriter (High Conversion Selling)</option>
+                <option value="analyst">Data Analyst (Structured Summaries & Patterns)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="userRawPrompt">Input Raw User Prompt</label>
+              <textarea id="userRawPrompt" rows="3" placeholder="e.g. Write a cold email to sell SaaS..."></textarea>
+            </div>
+
+            <button class="btn-primary" id="btnOptimizePrompt">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              Optimize Prompt Structure
+            </button>
+
+            <div class="prompt-comparison-results hidden" id="promptComparisonResults">
+              <h4>System-Specific Prompts</h4>
+              
+              <div class="prompt-box">
+                <span class="badge badge-purple">Google Gemini Mode</span>
+                <pre id="outputGeminiPrompt">Loading...</pre>
+              </div>
+              
+              <div class="prompt-box">
+                <span class="badge badge-cyan">Anthropic Claude Mode</span>
+                <pre id="outputClaudePrompt">Loading...</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Productivity Template Generator -->
+          <div class="fund-panel">
+            <h3 class="panel-title">Business & SaaS Productivity Suite</h3>
+            <p class="panel-desc">Create quick copyable templates for client communication, Upwork proposals, and emails.</p>
+
+            <div class="template-grid-buttons">
+              <button class="prod-btn-select active" data-template="email">SaaS Cold Email</button>
+              <button class="prod-btn-select" data-template="proposal">Upwork Freelancer Proposal</button>
+              <button class="prod-btn-select" data-template="script">Faceless YouTube Script</button>
+              <button class="prod-btn-select" data-template="presentation">Presentation Pitch Outline</button>
+            </div>
+
+            <div class="template-form-inputs">
+              <div class="form-group">
+                <label for="templateTopicInput" id="labelTemplateTopic">SaaS / Project Topic Name</label>
+                <input type="text" id="templateTopicInput" placeholder="e.g. CRM Automation Tool" value="LeadFlow AI Automation">
+              </div>
+            </div>
+
+            <button class="btn-primary" id="btnCompileTemplate">
+              Compile Document Template
+            </button>
+
+            <div class="compiled-template-output">
+              <div class="compiled-header">
+                <span>Output Document (Click to Copy)</span>
+                <button class="btn-copy" id="btnCopyDocument">Copy</button>
+              </div>
+              <textarea class="document-text-area" id="documentTextArea" readonly>Select a template and click Compile...</textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+
+      <!-- 7. AI TOOLS VIEW -->
+      <section class="viewport-section" id="aitools-view">
+        <div class="section-header">
+          <h1>🧠 AI Tools</h1>
+          <p>Smart utilities — scheduling optimizer, post analyzer, hashtag generator, image analyzer.</p>
+        </div>
+
+        <div class="aitools-grid">
+
+          <!-- 1. AI Schedule Optimizer -->
+          <div class="aitool-card">
+            <div class="aitool-header">
+              <span class="aitool-icon">📅</span>
+              <div>
+                <h3>AI Schedule Optimizer</h3>
+                <p>Analyzes your posts & recommends best times to publish for maximum engagement.</p>
+              </div>
+            </div>
+            <div class="aitool-body">
+              <div class="form-group">
+                <label>Your Niche / Topic</label>
+                <input type="text" id="aiScheduleNiche" placeholder="e.g. AI SaaS, Digital Marketing, Tech Reviews" value="AI Automation">
+              </div>
+              <div class="form-group">
+                <label>Platform</label>
+                <select id="aiSchedulePlatform">
+                  <option value="facebook">Facebook</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="linkedin">LinkedIn</option>
+                </select>
+              </div>
+              <button class="btn-primary" id="btnOptimizeSchedule">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Analyze & Optimize
+              </button>
+              <div class="aitool-result hidden" id="scheduleResult">
+                <h4>📊 Recommended Schedule</h4>
+                <div id="scheduleResultContent"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Post Performance Analyzer -->
+          <div class="aitool-card">
+            <div class="aitool-header">
+              <span class="aitool-icon">📊</span>
+              <div>
+                <h3>Post Performance Analyzer</h3>
+                <p>Get AI-powered insights on your content & actionable suggestions to improve engagement.</p>
+              </div>
+            </div>
+            <div class="aitool-body">
+              <div class="form-group">
+                <label>Post Content / Caption</label>
+                <textarea id="aiPerfPost" rows="3" placeholder="Paste your post content or caption here..."></textarea>
+              </div>
+              <div class="form-group">
+                <label>Post Type</label>
+                <select id="aiPerfType">
+                  <option value="promotional">Promotional / Sales</option>
+                  <option value="educational">Educational / Tutorial</option>
+                  <option value="storytelling">Storytelling / Personal</option>
+                  <option value="entertainment">Entertainment / Viral</option>
+                </select>
+              </div>
+              <button class="btn-primary" id="btnAnalyzePost">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"></path><polyline points="22 3 12 13 9 10"></polyline></svg>
+                Analyze Performance
+              </button>
+              <div class="aitool-result hidden" id="perfResult">
+                <h4>📈 Performance Insights</h4>
+                <div id="perfResultContent"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Auto Hashtag / SEO Generator -->
+          <div class="aitool-card">
+            <div class="aitool-header">
+              <span class="aitool-icon">🏷️</span>
+              <div>
+                <h3>Hashtag & SEO Generator</h3>
+                <p>Generate viral trending hashtags, SEO titles & descriptions for your content.</p>
+              </div>
+            </div>
+            <div class="aitool-body">
+              <div class="form-group">
+                <label>Content Topic</label>
+                <input type="text" id="aiHashtagTopic" placeholder="e.g. AI tools for business" value="AI Automation">
+              </div>
+              <div class="form-group">
+                <label>Platform</label>
+                <select id="aiHashtagPlatform">
+                  <option value="facebook">Facebook</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="tiktok">TikTok</option>
+                </select>
+              </div>
+              <button class="btn-primary" id="btnGenerateHashtags">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h16"></path><path d="M4 15h16"></path><path d="M10 3L8 21"></path><path d="M16 3l-2 18"></path></svg>
+                Generate SEO & Hashtags
+              </button>
+              <div class="aitool-result hidden" id="hashtagResult">
+                <h4>🔥 Trending Hashtags & SEO</h4>
+                <div id="hashtagResultContent"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. AI Image Analyzer -->
+          <div class="aitool-card">
+            <div class="aitool-header">
+              <span class="aitool-icon">🖼️</span>
+              <div>
+                <h3>AI Image Analyzer</h3>
+                <p>Upload an image and get AI-generated caption, description & tags.</p>
+              </div>
+            </div>
+            <div class="aitool-body">
+              <div class="aitool-image-upload" id="aiImageDropzone">
+                <input type="file" id="aiImageInput" accept="image/*" hidden>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span id="aiImageText">Click to upload an image for AI analysis</span>
+                <span class="upload-hint">Supports: JPG, PNG, WEBP</span>
+              </div>
+              <div class="aitool-image-preview hidden" id="aiImagePreview">
+                <img id="aiImagePreviewImg" src="" alt="Preview">
+                <button class="upload-remove-btn" id="aiImageRemoveBtn">✕</button>
+              </div>
+              <button class="btn-primary" id="btnAnalyzeImage" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"></path><polyline points="22 3 12 13 9 10"></polyline></svg>
+                Analyze Image
+              </button>
+              <div class="aitool-result hidden" id="imageResult">
+                <h4>📝 AI Analysis</h4>
+                <div id="imageResultContent"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Hidden terminal buffer for CLI output -->
+      <div id="terminalOutput" style="display:none"></div>
+
+    </div>
+
+      <!-- =============================================
+           AUTH SCREEN (Login / Register) — REMOVED
+           ============================================= -->
+
+
+      <!-- =============================================
+           PROFILE VIEW MODAL
+           ============================================= -->
+      <div class="profile-overlay hidden" id="profileOverlay">
+        <div class="profile-modal" id="profileModal">
+          <button class="auth-close-btn" id="profileCloseBtn">✕</button>
+
+          <!-- Profile Header -->
+          <div class="profile-header">
+            <div class="profile-big-avatar" id="profileBigAvatar">AD</div>
+            <div class="profile-header-info">
+              <h2 id="profileName">Adi</h2>
+              <p id="profileEmail">adi@prime.ai</p>
+              <span class="profile-badge">⭐ Prime Member</span>
+            </div>
+          </div>
+
+          <!-- Profile Stats -->
+          <div class="profile-stats-grid">
+            <div class="profile-stat-card">
+              <div class="stat-num" id="pStatImages">0</div>
+              <div class="stat-label">Images Generated</div>
+            </div>
+            <div class="profile-stat-card">
+              <div class="stat-num" id="pStatFlows">0</div>
+              <div class="stat-label">Flows Executed</div>
+            </div>
+            <div class="profile-stat-card">
+              <div class="stat-num" id="pStatChats">0</div>
+              <div class="stat-label">AI Conversations</div>
+            </div>
+            <div class="profile-stat-card">
+              <div class="stat-num" id="pStatDays">1</div>
+              <div class="stat-label">Days Active</div>
+            </div>
+          </div>
+
+          <!-- Profile Info Edit -->
+          <div class="profile-section-title">Account Information</div>
+          <div class="profile-info-grid">
+            <div class="profile-info-row">
+              <span class="info-label">Username</span>
+              <span class="info-value" id="profileUsername">adi</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="info-label">Email</span>
+              <span class="info-value" id="profileEmailDisplay">adi@prime.ai</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="info-label">Member Since</span>
+              <span class="info-value" id="profileJoined">July 2026</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="info-label">Plan</span>
+              <span class="info-value profile-plan">⭐ Prime Free</span>
+            </div>
+          </div>
+
+          <!-- Logout -->
+          <button class="logout-btn" id="logoutBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+      <!-- =============================================
+           FLOATING UNIVERSAL CREATOR BOT BUBBLE
+           ============================================= -->
+      <!-- Floating bot removed -->
+
+    </div>
+  </div>
+
+  <!-- ═══ FLOATING PRICING AD MODAL ═══ -->
+  <div class="pricing-ad-overlay hidden" id="pricingAdOverlay">
+    <div class="pricing-ad-modal">
+      <button class="pricing-ad-close" id="pricingAdClose">✕</button>
+      <div class="pricing-ad-glow"></div>
+      <div class="pricing-ad-header">
+        <div class="pricing-ad-badge">🔥 LIMITED TIME OFFER</div>
+        <h2>Unlock Full Power</h2>
+        <p>Social Autopilot & AI Engine — automate everything.</p>
+      </div>
+      <div class="pricing-ad-tabs">
+        <button class="pricing-ad-tab active" data-period="weekly">Weekly</button>
+        <button class="pricing-ad-tab" data-period="monthly">Monthly</button>
+      </div>
+      <div class="pricing-ad-cards">
+        <div class="pricing-ad-card" data-period="weekly">
+          <div class="pacat">Lite</div>
+          <div class="paprice"><span class="pacur">$</span>4.9<span class="pafreq">/wk</span></div>
+          <div class="padiscount"><span class="padisbadge">SAVE 20%</span><span class="paold">$6.1</span></div>
+          <ul class="pafeatures">
+            <li>✅ Social Autopilot</li>
+            <li>✅ AI Content Pipeline</li>
+            <li>✅ 50 AI generations/wk</li>
+            <li>✅ Basic scheduling</li>
+          </ul>
+          <button class="pabtn pabtn-lite">Get Started</button>
+        </div>
+        <div class="pricing-ad-card featured" data-period="weekly">
+          <div class="pabadge">⭐ POPULAR</div>
+          <div class="pacat">Pro Plus</div>
+          <div class="paprice"><span class="pacur">$</span>6.1<span class="pafreq">/wk</span></div>
+          <div class="padiscount"><span class="padisbadge">SAVE 25%</span><span class="paold">$8.2</span></div>
+          <ul class="pafeatures">
+            <li>✅ Unlimited AI generations</li>
+            <li>✅ AI Video Storyboard</li>
+            <li>✅ Multi-platform auto-post</li>
+            <li>✅ Priority support</li>
+          </ul>
+          <button class="pabtn pabtn-pro">Get Pro Plus</button>
+        </div>
+        <div class="pricing-ad-card hidden" data-period="monthly">
+          <div class="pacat">Lite</div>
+          <div class="paprice"><span class="pacur">$</span>19.9<span class="pafreq">/mo</span></div>
+          <div class="padiscount"><span class="padisbadge">SAVE 35%</span><span class="paold">$30.6</span></div>
+          <ul class="pafeatures">
+            <li>✅ Social Autopilot</li>
+            <li>✅ AI Content Pipeline</li>
+            <li>✅ 200 AI generations/mo</li>
+            <li>✅ Basic scheduling</li>
+          </ul>
+          <button class="pabtn pabtn-lite">Get Started</button>
+        </div>
+        <div class="pricing-ad-card featured hidden" data-period="monthly">
+          <div class="pabadge">⭐ BEST VALUE</div>
+          <div class="pacat">Pro Plus</div>
+          <div class="paprice"><span class="pacur">$</span>22<span class="pafreq">/mo</span></div>
+          <div class="padiscount"><span class="padisbadge">SAVE 40%</span><span class="paold">$36.7</span></div>
+          <ul class="pafeatures">
+            <li>✅ Unlimited AI generations</li>
+            <li>✅ AI Video Storyboard</li>
+            <li>✅ Multi-platform auto-post</li>
+            <li>✅ Priority support</li>
+          </ul>
+          <button class="pabtn pabtn-pro">Get Pro Plus</button>
+        </div>
+      </div>
+      <div class="pricing-ad-footer">🛡️ 7-day money-back guarantee • Cancel anytime</div>
+    </div>
+  </div>
+
+  <!-- =============================================
+       TERMS OF SERVICE MODAL
+       ============================================= -->
+  <div class="legal-overlay hidden" id="legalOverlay" onclick="closeLegalModal(event)">
+    <div class="legal-modal" id="legalModal">
+      <button class="legal-close-btn" onclick="closeLegalModal(null, true)">✕</button>
+      <div class="legal-tabs">
+        <button class="legal-tab active" id="legalTabTerms" onclick="switchLegalTab('terms')">Terms of Service</button>
+        <button class="legal-tab" id="legalTabPrivacy" onclick="switchLegalTab('privacy')">Privacy Policy</button>
+      </div>
+
+      <!-- Terms of Service Content -->
+      <div class="legal-content" id="legalContentTerms">
+        <h2>⚡ Terms of Service</h2>
+        <p class="legal-date">Last updated: July 2025</p>
+
+        <h3>1. Acceptance of Terms</h3>
+        <p>By accessing or using Prime AI Dashboard ("Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.</p>
+
+        <h3>2. Use of the Service</h3>
+        <p>Prime AI Dashboard is provided for automation, project management, and productivity purposes. You agree to use the Service only for lawful purposes and in a manner that does not infringe the rights of others.</p>
+        <ul>
+          <li>You must be at least 13 years old to use this Service.</li>
+          <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
+          <li>You agree not to share, sell, or transfer your account to any third party.</li>
+          <li>You must not attempt to reverse-engineer, hack, or disrupt the Service.</li>
+        </ul>
+
+        <h3>3. Account Registration</h3>
+        <p>To access certain features, you must create an account using a valid email address. You are responsible for all activity that occurs under your account. Providing false information during registration may result in account termination.</p>
+
+        <h3>4. Intellectual Property</h3>
+        <p>All content, branding, software, and materials within Prime AI Dashboard are the intellectual property of Prime AI and are protected by applicable copyright, trademark, and other laws. You may not reproduce, distribute, or create derivative works without prior written consent.</p>
+
+        <h3>5. Prohibited Activities</h3>
+        <p>You agree not to engage in any of the following:</p>
+        <ul>
+          <li>Using the Service for illegal, harmful, or fraudulent activities.</li>
+          <li>Uploading malicious code, viruses, or disruptive content.</li>
+          <li>Attempting unauthorized access to any part of the Service or its infrastructure.</li>
+          <li>Scraping or automated extraction of data without permission.</li>
+        </ul>
+
+        <h3>6. Service Availability</h3>
+        <p>We strive to ensure high availability of the Service, but we do not guarantee uninterrupted access. Maintenance, updates, or unforeseen issues may cause temporary downtime. We are not liable for any loss resulting from service interruptions.</p>
+
+        <h3>7. Termination</h3>
+        <p>We reserve the right to suspend or terminate your account at any time if you violate these Terms. Upon termination, your right to use the Service ceases immediately.</p>
+
+        <h3>8. Limitation of Liability</h3>
+        <p>Prime AI Dashboard is provided "as is" without warranties of any kind. We are not liable for any indirect, incidental, or consequential damages arising from your use of the Service.</p>
+
+        <h3>9. Changes to Terms</h3>
+        <p>We may update these Terms at any time. Continued use of the Service after changes constitutes your acceptance of the new Terms. We encourage you to review this page periodically.</p>
+
+        <h3>10. Contact</h3>
+        <p>If you have any questions about these Terms, please contact us at <strong>proplan3069@gmail.com</strong>.</p>
+      </div>
+
+      <!-- Privacy Policy Content -->
+      <div class="legal-content hidden" id="legalContentPrivacy">
+        <h2>🔒 Privacy Policy</h2>
+        <p class="legal-date">Last updated: July 2025</p>
+
+        <h3>1. Information We Collect</h3>
+        <p>When you create an account or use Prime AI Dashboard, we may collect the following types of information:</p>
+        <ul>
+          <li><strong>Account Information:</strong> Full name, email address, and account creation date.</li>
+          <li><strong>Usage Data:</strong> Features accessed, download logs, session timestamps, and interaction data.</li>
+          <li><strong>Device Information:</strong> Operating system, app version, and general technical information for debugging purposes.</li>
+        </ul>
+
+        <h3>2. How We Use Your Information</h3>
+        <p>We use the information collected to:</p>
+        <ul>
+          <li>Provide, operate, and improve the Service.</li>
+          <li>Send email verification and security-related notifications.</li>
+          <li>Track download and usage activity for account management.</li>
+          <li>Respond to support requests and inquiries.</li>
+          <li>Detect and prevent fraudulent or unauthorized activity.</li>
+        </ul>
+
+        <h3>3. Data Storage & Security</h3>
+        <p>Your account and preference data are stored locally on your device. We implement access controls where applicable. However, no system is 100% secure, and we cannot guarantee absolute security.</p>
+
+        <h3>4. Data Sharing</h3>
+        <p>We do <strong>not</strong> sell, rent, or trade your personal information to third parties. We may share data only in the following situations:</p>
+        <ul>
+          <li>When required by law, court order, or governmental authority.</li>
+          <li>To protect the rights, property, or safety of Prime AI or its users.</li>
+        </ul>
+
+        <h3>5. Cookies & Tracking</h3>
+        <p>Prime AI Dashboard may use local storage and session data to maintain your login state and preferences. We do not use third-party advertising cookies.</p>
+
+        <h3>6. Your Rights</h3>
+        <p>You have the right to:</p>
+        <ul>
+          <li>Access the personal data we hold about you.</li>
+          <li>Request correction of inaccurate data.</li>
+          <li>Request deletion of your account and associated data.</li>
+          <li>Withdraw consent at any time by deleting your account.</li>
+        </ul>
+        <p>To exercise these rights, contact us at <strong>proplan3069@gmail.com</strong>.</p>
+
+        <h3>7. Children's Privacy</h3>
+        <p>Our Service is not directed to children under the age of 13. We do not knowingly collect personal information from children. If we become aware that a child has provided us with personal data, we will delete it promptly.</p>
+
+        <h3>8. Third-Party Services</h3>
+        <p>The Service may open third-party sites (for example platform login pages) when you connect social accounts. Those services have their own privacy policies.</p>
+
+        <h3>9. Changes to This Policy</h3>
+        <p>We may update this Privacy Policy from time to time. We will notify registered users of significant changes via email. Continued use of the Service after updates constitutes acceptance.</p>
+
+        <h3>10. Contact Us</h3>
+        <p>For any privacy-related questions or data requests, contact: <strong>proplan3069@gmail.com</strong></p>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Include projects data directly as a fallback for standard browser preview -->
+  <script src="projects.js"></script>
+  <script src="automation.js"></script>
+  <!-- Main Renderer Script -->
+  <script src="renderer.js"></script>
+  <script>
+    // Dashboard loads directly — no login needed
+    document.addEventListener('DOMContentLoaded', () => {
+      const appContainer = document.querySelector('.app-container');
+      const titlebar = document.querySelector('.titlebar');
+      if (appContainer) appContainer.style.display = 'flex';
+      if (titlebar) titlebar.style.display = 'flex';
+    });
+  </script>
+  </body>
+  </html>
+
